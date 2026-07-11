@@ -270,8 +270,12 @@ class SDKServer {
     const signedInAt = new Date();
     let user = await db.getUserByOpenId(sessionUserId);
 
-    // If user not in DB, sync from OAuth server automatically
+    // Se usuário não está no banco, tenta sincronizar via OAuth do Manus —
+    // mas só se o Manus estiver de fato configurado (evita erro em login local).
     if (!user) {
+      if (!ENV.oAuthServerUrl || !ENV.appId) {
+        throw ForbiddenError("User not found");
+      }
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
         await db.upsertUser({

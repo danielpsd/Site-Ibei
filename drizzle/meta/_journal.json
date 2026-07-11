@@ -29,6 +29,13 @@
       "when": 1783733500000,
       "tag": "0003_add_gallery_mural",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1783744000000,
+      "tag": "0004_add_password_auth",
+      "breakpoints": true
     }
   ]
 }

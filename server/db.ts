@@ -10,7 +10,18 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      // Alguns provedores de MySQL gerenciado na nuvem (ex: TiDB Cloud) exigem
+      // conexão TLS. Defina DATABASE_SSL=true nas variáveis de ambiente para habilitar.
+      if (process.env.DATABASE_SSL === "true") {
+        _db = drizzle({
+          connection: {
+            uri: process.env.DATABASE_URL,
+            ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true },
+          },
+        });
+      } else {
+        _db = drizzle(process.env.DATABASE_URL);
+      }
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -36,7 +47,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "email", "loginMethod", "passwordHash"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -87,6 +98,13 @@ export async function getUserByOpenId(openId: string) {
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 

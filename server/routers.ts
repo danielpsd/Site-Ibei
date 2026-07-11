@@ -1,10 +1,13 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { notifyOwner } from "./_core/notification";
 import * as db from "./db";
+import { sdk } from "./_core/sdk";
+import { verifyPassword } from "./_core/password";
 import { validateCPF, validateRG, validatePhone, sanitizeString } from "./_core/validators";
 
 // Schemas de validação
@@ -67,6 +70,36 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+    login: publicProcedure
+      .input(z.object({
+        email: z.string().email("Email inválido").toLowerCase(),
+        password: z.string().min(1, "Senha é obrigatória"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await db.getUserByEmail(input.email);
+
+        if (!user || !user.passwordHash) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Email ou senha inválidos" });
+        }
+
+        const isValid = await verifyPassword(input.password, user.passwordHash);
+        if (!isValid) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Email ou senha inválidos" });
+        }
+
+        const signedInAt = new Date();
+        await db.upsertUser({ openId: user.openId, lastSignedIn: signedInAt });
+
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+        return { success: true, user: { ...user, lastSignedIn: signedInAt } } as const;
+      }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -101,7 +134,7 @@ export const appRouter = router({
         await notifyOwner({
           title: "Novo Membro Cadastrado",
           content: `${input.name} foi cadastrado como novo membro. Email: ${input.email}`,
-        });
+        }).catch((err) => console.warn("[Notification] Skipped:", err?.message));
         return result;
       }),
     
@@ -143,7 +176,7 @@ export const appRouter = router({
         await notifyOwner({
           title: "Novo Visitante Registrado",
           content: `${input.name} visitou a igreja. Email: ${input.email}`,
-        });
+        }).catch((err) => console.warn("[Notification] Skipped:", err?.message));
         return result;
       }),
     
@@ -179,7 +212,7 @@ export const appRouter = router({
         await notifyOwner({
           title: "Novo Convertido Registrado",
           content: `${input.name} foi registrado como novo convertido. Email: ${input.email}`,
-        });
+        }).catch((err) => console.warn("[Notification] Skipped:", err?.message));
         return result;
       }),
     

@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import Login from "./pages/Login";
 import MuralPalavra from "./pages/MuralPalavra";
 import Galeria from "./pages/Galeria";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -28,6 +29,7 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/login"} component={Login} />
       <Route path={"/mural-palavra"} component={MuralPalavra} />
       <Route path={"/galeria"} component={Galeria} />
       <Route path={"/admin"} component={Admin} />

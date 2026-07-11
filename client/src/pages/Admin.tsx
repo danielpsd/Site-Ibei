@@ -11,7 +11,7 @@ export default function Admin() {
   useEffect(() => {
     // Se não está autenticado, redireciona para login
     if (!loading && !isAuthenticated) {
-      setLocation("/");
+      setLocation("/login");
     }
   }, [loading, isAuthenticated, setLocation]);
 
