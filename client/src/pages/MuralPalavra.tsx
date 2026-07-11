@@ -23,7 +23,7 @@ export default function MuralPalavra() {
     <div className="min-h-screen bg-[#0A0A0A]">
       <Navbar />
 
-      <section className="pt-32 pb-20 bg-gradient-to-b from-slate-900 to-slate-950">
+      <section className="pt-32 pb-20 bg-[#111111]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-green-500/10 p-3 rounded-xl">
@@ -48,7 +48,7 @@ export default function MuralPalavra() {
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-slate-800 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300 group"
+                  className="bg-zinc-800 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300 group"
                 >
                   {post.youtubeUrl && extractYoutubeId(post.youtubeUrl) && (
                     <div className="relative bg-black aspect-video overflow-hidden">

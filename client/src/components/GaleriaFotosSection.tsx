@@ -13,7 +13,7 @@ export default function GaleriaFotosSection() {
   const preview = fotos.slice(0, 6);
 
   return (
-    <section id="galeria-fotos" className="py-20 bg-slate-950">
+    <section id="galeria-fotos" className="py-20 bg-[#0A0A0A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
           <div className="flex items-center gap-3">
@@ -40,7 +40,7 @@ export default function GaleriaFotosSection() {
           <Link href="/galeria">
             <a className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {preview.map((foto) => (
-                <div key={foto.id} className="group relative bg-slate-800 rounded-lg overflow-hidden aspect-square">
+                <div key={foto.id} className="group relative bg-zinc-800 rounded-lg overflow-hidden aspect-square">
                   <img
                     src={foto.imageUrl}
                     alt={foto.title}

@@ -99,6 +99,15 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
+          <div className="w-14 h-14 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 border">
+            {member.photoUrl ? (
+              <img src={member.photoUrl} alt={member.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-lg font-bold text-muted-foreground">
+                {member.name.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
           <div>
             <h2 className="text-2xl font-bold">{member.name}</h2>
             <p className="text-muted-foreground">{member.email}</p>
@@ -225,6 +234,15 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{member.specialNeeds || "Não informado"}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="col-span-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Comentários (uso interno)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-line">{member.notes || "Nenhum comentário registrado"}</p>
               </CardContent>
             </Card>
           </div>

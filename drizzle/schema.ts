@@ -42,6 +42,9 @@ export const members = mysqlTable("members", {
   cpf: varchar("cpf", { length: 14 }),
   specialNeeds: text("specialNeeds"),
   address: text("address"),
+  // Foto de perfil (base64) e comentários administrativos
+  photoUrl: mediumtext("photoUrl"),
+  notes: text("notes"),
   // Informações Religiosas
   isBaptized: mysqlEnum("isBaptized", ["sim", "nao"]).default("nao"),
   baptismDate: varchar("baptismDate", { length: 10 }), // YYYY-MM-DD

@@ -17,7 +17,7 @@ export default function Galeria() {
     <div className="min-h-screen bg-[#0A0A0A]">
       <Navbar />
 
-      <section className="pt-32 pb-20 bg-slate-950">
+      <section className="pt-32 pb-20 bg-[#0A0A0A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-yellow-500/10 p-3 rounded-xl">
@@ -42,7 +42,7 @@ export default function Galeria() {
               {fotos.map((foto) => (
                 <div
                   key={foto.id}
-                  className="group relative bg-slate-800 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-yellow-500/20 transition-all duration-300"
+                  className="group relative bg-zinc-800 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-yellow-500/20 transition-all duration-300"
                 >
                   <div className="relative bg-black aspect-square overflow-hidden">
                     <img

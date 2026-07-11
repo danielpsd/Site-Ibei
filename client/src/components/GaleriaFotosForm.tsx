@@ -5,45 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Trash2, Plus, Image as ImageIcon, Loader2, Upload, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-
-// Redimensiona a imagem no navegador antes de enviar, para não pesar o banco de dados.
-const MAX_DIMENSION = 1600;
-const JPEG_QUALITY = 0.82;
-
-function resizeImageFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("Não foi possível ler o arquivo"));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error("Arquivo de imagem inválido"));
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-          if (width > height) {
-            height = Math.round((height * MAX_DIMENSION) / width);
-            width = MAX_DIMENSION;
-          } else {
-            width = Math.round((width * MAX_DIMENSION) / height);
-            height = MAX_DIMENSION;
-          }
-        }
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Não foi possível processar a imagem"));
-          return;
-        }
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", JPEG_QUALITY));
-      };
-      img.src = reader.result as string;
-    };
-    reader.readAsDataURL(file);
-  });
-}
+import { resizeImageFile } from "@/lib/imageResize";
 
 export default function GaleriaFotosForm() {
   const utils = trpc.useUtils();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { resizeImageFile } from "@/lib/imageResize";
+import { Loader2, UserRound } from "lucide-react";
 
 interface MemberFormExpandedProps {
   open: boolean;
@@ -54,6 +56,8 @@ const emptyDefaults = {
   groups: "",
   trails: "",
   status: "ativo",
+  photoUrl: "",
+  notes: "",
 };
 
 export default function MemberFormExpanded({
@@ -63,9 +67,12 @@ export default function MemberFormExpanded({
   member,
 }: MemberFormExpandedProps) {
   const isEditing = Boolean(member?.id);
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: emptyDefaults,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+  const photoUrl = watch("photoUrl");
 
   // Preenche o formulário com os dados do membro ao abrir em modo de edição.
   useEffect(() => {
@@ -79,11 +86,36 @@ export default function MemberFormExpanded({
         baptismDate: member.baptismDate || "",
         groups: parseListField(member.groups),
         trails: parseListField(member.trails),
+        photoUrl: member.photoUrl || "",
+        notes: member.notes || "",
       });
     } else {
       reset(emptyDefaults);
     }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }, [open, member, reset]);
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem");
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Imagem muito grande (máximo 15MB)");
+      return;
+    }
+    setPhotoProcessing(true);
+    try {
+      const resized = await resizeImageFile(file, 500, 0.85);
+      setValue("photoUrl", resized);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao processar a foto");
+    } finally {
+      setPhotoProcessing(false);
+    }
+  };
 
   const createMember = trpc.members.create.useMutation();
   const updateMember = trpc.members.update.useMutation();
@@ -112,6 +144,8 @@ export default function MemberFormExpanded({
         groups: data.groups ? JSON.stringify(data.groups.split(",").map((g: string) => g.trim()).filter(Boolean)) : undefined,
         trails: data.trails ? JSON.stringify(data.trails.split(",").map((t: string) => t.trim()).filter(Boolean)) : undefined,
         status: data.status,
+        photoUrl: data.photoUrl || undefined,
+        notes: data.notes || undefined,
       };
 
       if (isEditing && member?.id) {
@@ -148,6 +182,31 @@ export default function MemberFormExpanded({
 
             {/* TAB 1: DADOS BÁSICOS */}
             <TabsContent value="basico" className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 border">
+                  {photoUrl ? (
+                    <img src={photoUrl} alt="Foto do membro" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserRound className="w-8 h-8 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium block">Foto do Membro</label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="block text-sm"
+                  />
+                  {photoProcessing && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Processando...
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">Nome Completo *</label>
@@ -263,6 +322,15 @@ export default function MemberFormExpanded({
                 <Textarea
                   placeholder="Descreva qualquer necessidade especial..."
                   {...register("specialNeeds")}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Comentários (uso interno da administração)</label>
+                <Textarea
+                  placeholder="Observações internas sobre o membro..."
+                  rows={4}
+                  {...register("notes")}
                 />
               </div>
             </TabsContent>

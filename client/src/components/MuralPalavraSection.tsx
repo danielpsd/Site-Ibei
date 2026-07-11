@@ -13,7 +13,7 @@ export default function MuralPalavraSection() {
   const latest = posts[0];
 
   return (
-    <section id="mural-palavra" className="py-20 bg-gradient-to-b from-slate-900 to-slate-950">
+    <section id="mural-palavra" className="py-20 bg-[#111111]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10">
           <div className="flex items-center gap-3">
@@ -38,7 +38,7 @@ export default function MuralPalavraSection() {
 
         {latest ? (
           <Link href="/mural-palavra">
-            <a className="block bg-slate-800 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300 group max-w-2xl">
+            <a className="block bg-zinc-800 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300 group max-w-2xl">
               <div className="flex flex-col sm:flex-row">
                 <div className="relative bg-black w-full sm:w-64 aspect-video sm:aspect-square shrink-0 flex items-center justify-center">
                   <Play className="text-green-400 group-hover:scale-110 transition-transform" size={40} />

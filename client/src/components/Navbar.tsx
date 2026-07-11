@@ -5,9 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Menu, X, Settings } from "lucide-react";
-import { getLoginUrl } from "@/const";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { Menu, X } from "lucide-react";
 import { useLocation, Link } from "wouter";
 
 // Links que rolam a página (âncoras) — só funcionam na Home
@@ -27,7 +25,6 @@ const pageLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
@@ -73,7 +70,7 @@ export default function Navbar() {
               }
             }}
           >
-            <img src="/manus-storage/Screenshot_12-removebg-preview_b3cd6db9.png" alt="IBEI" className="w-12 h-12" />
+            <img src="/images/logo-ibei.png" alt="IBEI" className="w-12 h-12" />
             <div className="hidden sm:flex flex-col">
               <span className="font-display font-black text-white text-sm tracking-tight">IBEI</span>
               <span className="text-xs text-green-400 font-semibold">Igreja Batista Ebenézer</span>
@@ -106,38 +103,12 @@ export default function Navbar() {
 
           {/* CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            {isAuthenticated && user?.role === "admin" && (
-              <button
-                onClick={() => setLocation("/admin")}
-                className="text-sm font-semibold text-yellow-400 hover:text-yellow-300 transition-colors font-body flex items-center gap-2"
-              >
-                <Settings size={16} />
-                Painel Admin
-              </button>
-            )}
-            {!isAuthenticated ? (
-              <>
-                <button
-                  onClick={() => window.location.href = getLoginUrl()}
-                  className="text-sm font-semibold text-white/70 hover:text-white transition-colors font-body"
-                >
-                  Sou Membro
-                </button>
-                <button
-                  onClick={() => handleNavClick("#contato")}
-                  className="bg-green-500 hover:bg-green-400 text-black font-bold text-sm px-5 py-2.5 rounded-full transition-all duration-200 hover:scale-105 font-display"
-                >
-                  Quero Conhecer →
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => handleNavClick("#contato")}
-                className="bg-green-500 hover:bg-green-400 text-black font-bold text-sm px-5 py-2.5 rounded-full transition-all duration-200 hover:scale-105 font-display"
-              >
-                Quero Conhecer →
-              </button>
-            )}
+            <button
+              onClick={() => handleNavClick("#contato")}
+              className="bg-green-500 hover:bg-green-400 text-black font-bold text-sm px-5 py-2.5 rounded-full transition-all duration-200 hover:scale-105 font-display"
+            >
+              Quero Conhecer →
+            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -176,38 +147,12 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="pt-4 border-t border-white/10 space-y-3">
-              {isAuthenticated && user?.role === "admin" && (
-                <button
-                  onClick={() => { setIsOpen(false); setLocation("/admin"); }}
-                  className="w-full text-yellow-400 hover:text-yellow-300 font-medium py-2 font-body flex items-center justify-center gap-2"
-                >
-                  <Settings size={16} />
-                  Painel Admin
-                </button>
-              )}
-              {!isAuthenticated ? (
-                <>
-                  <button
-                    onClick={() => window.location.href = getLoginUrl()}
-                    className="w-full text-white/80 hover:text-white font-medium py-2 font-body"
-                  >
-                    Sou Membro
-                  </button>
-                  <button
-                    onClick={() => handleNavClick("#contato")}
-                    className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-full transition-colors font-display"
-                  >
-                    Quero Conhecer →
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => handleNavClick("#contato")}
-                  className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-full transition-colors font-display"
-                >
-                  Quero Conhecer →
-                </button>
-              )}
+              <button
+                onClick={() => handleNavClick("#contato")}
+                className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-full transition-colors font-display"
+              >
+                Quero Conhecer →
+              </button>
             </div>
           </div>
         </div>

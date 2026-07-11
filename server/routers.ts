@@ -23,6 +23,8 @@ const memberSchema = z.object({
   cpf: z.string().optional().refine((val) => !val || validateCPF(val), "CPF inválido"),
   specialNeeds: z.string().optional().transform((val) => val ? sanitizeString(val) : val),
   address: z.string().optional().transform((val) => val ? sanitizeString(val) : val),
+  photoUrl: z.string().optional(),
+  notes: z.string().optional().transform((val) => val ? sanitizeString(val) : val),
   isBaptized: z.enum(["sim", "nao"]).optional(),
   baptismDate: z.string().optional(),
   isPastor: z.enum(["sim", "nao"]).optional(),
