@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { Image as ImageIcon, Download, Loader2, X } from "lucide-react";
+import { Image as ImageIcon, Download, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -35,6 +35,7 @@ const FALLBACK_IMG =
 export default function Galeria() {
   const { data: fotos = [], isLoading } = trpc.gallery.list.useQuery();
   const [albumAberto, setAlbumAberto] = useState<Foto[] | null>(null);
+  const [fotoExpandida, setFotoExpandida] = useState<{ foto: Foto; index: number } | null>(null);
 
   const albuns = groupIntoAlbums(fotos as Foto[]);
 
@@ -71,7 +72,7 @@ export default function Galeria() {
                 return (
                   <button
                     key={capa.albumId || capa.id}
-                    onClick={() => setAlbumAberto(album)}
+                    onClick={() => { setAlbumAberto(album); setFotoExpandida(null); }}
                     className="group relative bg-zinc-800 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-yellow-500/20 transition-all duration-300 text-left"
                   >
                     <div className="relative bg-black aspect-square overflow-hidden grid grid-cols-2 grid-rows-2 gap-0.5">
@@ -126,36 +127,105 @@ export default function Galeria() {
       {albumAberto && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setAlbumAberto(null)}
+          onClick={() => { setAlbumAberto(null); setFotoExpandida(null); }}
         >
           <div className="max-w-5xl w-full max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-white text-xl font-bold">{albumAberto[0].title}</h2>
-              <button onClick={() => setAlbumAberto(null)} className="text-white/70 hover:text-white">
+              <button onClick={() => { setAlbumAberto(null); setFotoExpandida(null); }} className="text-white/70 hover:text-white">
                 <X size={28} />
               </button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {albumAberto.map((foto) => (
-                <div key={foto.id} className="relative group aspect-square rounded-lg overflow-hidden bg-black">
+              {albumAberto.map((foto, index) => (
+                <button
+                  key={foto.id}
+                  onClick={() => setFotoExpandida({ foto, index })}
+                  className="relative group aspect-square rounded-lg overflow-hidden bg-black cursor-zoom-in"
+                >
                   <img
                     src={foto.imageUrl}
                     alt={foto.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   <a
                     href={foto.imageUrl}
                     download
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+                    className="absolute bottom-2 right-2 bg-black/70 hover:bg-yellow-500 hover:text-black text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <Download className="text-white" size={24} />
+                    <Download size={16} />
                   </a>
-                </div>
+                </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Foto expandida em tela cheia, com navegação entre as fotos do álbum */}
+      {fotoExpandida && albumAberto && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setFotoExpandida(null)}
+        >
+          <button
+            onClick={() => setFotoExpandida(null)}
+            className="absolute top-4 right-4 text-white/70 hover:text-white z-10"
+          >
+            <X size={32} />
+          </button>
+
+          {albumAberto.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newIndex = (fotoExpandida.index - 1 + albumAberto.length) % albumAberto.length;
+                  setFotoExpandida({ foto: albumAberto[newIndex], index: newIndex });
+                }}
+                className="absolute left-2 sm:left-6 text-white/70 hover:text-white z-10"
+              >
+                <ChevronLeft size={36} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newIndex = (fotoExpandida.index + 1) % albumAberto.length;
+                  setFotoExpandida({ foto: albumAberto[newIndex], index: newIndex });
+                }}
+                className="absolute right-2 sm:right-6 text-white/70 hover:text-white z-10"
+              >
+                <ChevronRight size={36} />
+              </button>
+            </>
+          )}
+
+          <div className="max-w-5xl max-h-[85vh] w-full flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={fotoExpandida.foto.imageUrl}
+              alt={fotoExpandida.foto.title}
+              className="max-w-full max-h-[75vh] object-contain rounded-lg"
+              onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+            />
+            <div className="flex items-center justify-between w-full mt-4 px-2">
+              <p className="text-white/70 text-sm">
+                {fotoExpandida.index + 1} de {albumAberto.length}
+              </p>
+              <a
+                href={fotoExpandida.foto.imageUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-4 py-2 rounded-full text-sm transition-colors"
+              >
+                <Download size={16} />
+                Baixar
+              </a>
             </div>
           </div>
         </div>
