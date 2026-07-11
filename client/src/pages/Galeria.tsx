@@ -1,17 +1,42 @@
 /*
  * Galeria de Fotos — Página pública dedicada
- * Exibe fotos dos cultos e eventos. A publicação é feita exclusivamente
- * pelo Painel Admin (/admin), garantindo que o site público fique limpo
- * para quem apenas consome o conteúdo.
+ * Exibe fotos dos cultos e eventos, agrupadas em álbuns (quando enviadas juntas
+ * pelo painel admin). A publicação é feita exclusivamente pelo Painel Admin (/admin).
  */
 
-import { Image as ImageIcon, Download, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Image as ImageIcon, Download, Loader2, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+type Foto = {
+  id: number;
+  title: string;
+  imageUrl: string;
+  photoDate?: string | null;
+  albumId?: string | null;
+  createdAt: string | Date;
+};
+
+function groupIntoAlbums(fotos: Foto[]): Foto[][] {
+  const grupos = new Map<string, Foto[]>();
+  for (const foto of fotos) {
+    const chave = foto.albumId || `single-${foto.id}`;
+    if (!grupos.has(chave)) grupos.set(chave, []);
+    grupos.get(chave)!.push(foto);
+  }
+  return Array.from(grupos.values());
+}
+
+const FALLBACK_IMG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23333' width='200' height='200'/%3E%3Ctext x='100' y='100' font-size='14' fill='%23999' text-anchor='middle' dy='.3em'%3EImagem não carregada%3C/text%3E%3C/svg%3E";
+
 export default function Galeria() {
   const { data: fotos = [], isLoading } = trpc.gallery.list.useQuery();
+  const [albumAberto, setAlbumAberto] = useState<Foto[] | null>(null);
+
+  const albuns = groupIntoAlbums(fotos as Foto[]);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
@@ -39,44 +64,52 @@ export default function Galeria() {
 
           {!isLoading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
-              {fotos.map((foto) => (
-                <div
-                  key={foto.id}
-                  className="group relative bg-zinc-800 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-yellow-500/20 transition-all duration-300"
-                >
-                  <div className="relative bg-black aspect-square overflow-hidden">
-                    <img
-                      src={foto.imageUrl}
-                      alt={foto.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23333' width='200' height='200'/%3E%3Ctext x='100' y='100' font-size='14' fill='%23999' text-anchor='middle' dy='.3em'%3EImagem não carregada%3C/text%3E%3C/svg%3E";
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                      <a
-                        href={foto.imageUrl}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-yellow-500 hover:bg-yellow-600 text-black p-3 rounded-full transition-colors"
-                      >
-                        <Download size={20} />
-                      </a>
+              {albuns.map((album) => {
+                const capa = album[0];
+                const extras = album.slice(1, 4);
+                const restantes = album.length - 4;
+                return (
+                  <button
+                    key={capa.albumId || capa.id}
+                    onClick={() => setAlbumAberto(album)}
+                    className="group relative bg-zinc-800 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-yellow-500/20 transition-all duration-300 text-left"
+                  >
+                    <div className="relative bg-black aspect-square overflow-hidden grid grid-cols-2 grid-rows-2 gap-0.5">
+                      <img
+                        src={capa.imageUrl}
+                        alt={capa.title}
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${extras.length > 0 ? "col-span-1 row-span-2" : "col-span-2 row-span-2"}`}
+                        onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+                      />
+                      {extras.map((foto, i) => (
+                        <div key={foto.id} className="relative">
+                          <img
+                            src={foto.imageUrl}
+                            alt={foto.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+                          />
+                          {i === extras.length - 1 && restantes > 0 && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                              <span className="text-white font-bold text-lg">+{restantes}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  </div>
 
-                  <div className="p-4">
-                    <h3 className="text-white font-semibold mb-1 truncate">{foto.title}</h3>
-                    <p className="text-white/50 text-xs">
-                      {foto.photoDate
-                        ? new Date(foto.photoDate).toLocaleDateString("pt-BR")
-                        : new Date(foto.createdAt).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                    <div className="p-4">
+                      <h3 className="text-white font-semibold mb-1 truncate">{capa.title}</h3>
+                      <p className="text-white/50 text-xs">
+                        {album.length > 1 ? `${album.length} fotos · ` : ""}
+                        {capa.photoDate
+                          ? new Date(capa.photoDate).toLocaleDateString("pt-BR")
+                          : new Date(capa.createdAt).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -88,6 +121,45 @@ export default function Galeria() {
           )}
         </div>
       </section>
+
+      {/* Modal do álbum aberto */}
+      {albumAberto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setAlbumAberto(null)}
+        >
+          <div className="max-w-5xl w-full max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white text-xl font-bold">{albumAberto[0].title}</h2>
+              <button onClick={() => setAlbumAberto(null)} className="text-white/70 hover:text-white">
+                <X size={28} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {albumAberto.map((foto) => (
+                <div key={foto.id} className="relative group aspect-square rounded-lg overflow-hidden bg-black">
+                  <img
+                    src={foto.imageUrl}
+                    alt={foto.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+                  />
+                  <a
+                    href={foto.imageUrl}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+                  >
+                    <Download className="text-white" size={24} />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

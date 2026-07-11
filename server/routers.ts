@@ -59,6 +59,7 @@ const galleryPhotoSchema = z.object({
   title: z.string().min(1, "Título é obrigatório").transform(sanitizeString),
   imageUrl: z.string().min(1, "URL da imagem é obrigatória"),
   photoDate: z.string().optional(),
+  albumId: z.string().optional(),
 });
 
 const muralPostSchema = z.object({

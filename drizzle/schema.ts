@@ -120,6 +120,8 @@ export const galleryPhotos = mysqlTable("galleryPhotos", {
   title: varchar("title", { length: 255 }).notNull(),
   imageUrl: mediumtext("imageUrl").notNull(),
   photoDate: varchar("photoDate", { length: 10 }), // YYYY-MM-DD
+  /** Fotos enviadas juntas (mesmo álbum) compartilham o mesmo albumId. */
+  albumId: varchar("albumId", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
