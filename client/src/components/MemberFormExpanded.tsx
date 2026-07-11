@@ -183,21 +183,32 @@ export default function MemberFormExpanded({
             {/* TAB 1: DADOS BÁSICOS */}
             <TabsContent value="basico" className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 border">
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative cursor-pointer group w-20 h-20 rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 border-2 border-dashed border-muted-foreground/30 hover:border-primary"
+                >
                   {photoUrl ? (
-                    <img src={photoUrl} alt="Foto do membro" className="w-full h-full object-cover" />
+                    <>
+                      <img src={photoUrl} alt="Foto do membro" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                        <span className="text-white text-[10px] font-medium opacity-0 group-hover:opacity-100 text-center px-1">
+                          Trocar
+                        </span>
+                      </div>
+                    </>
                   ) : (
                     <UserRound className="w-8 h-8 text-muted-foreground" />
                   )}
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-medium block">Foto do Membro</label>
+                  <p className="text-xs text-muted-foreground">Clique na foto ao lado para enviar/trocar</p>
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     onChange={handlePhotoChange}
-                    className="block text-sm"
+                    className="hidden"
                   />
                   {photoProcessing && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">

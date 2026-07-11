@@ -107,14 +107,36 @@ export default function AboutContentForm() {
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Foto do Pastor</label>
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="block text-sm" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="relative cursor-pointer group w-40 h-40 rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary overflow-hidden flex items-center justify-center bg-muted"
+          >
+            {form.pastorImage ? (
+              <>
+                <img src={form.pastorImage} alt="Pastor" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                  <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100">
+                    Clique para trocar
+                  </span>
+                </div>
+              </>
+            ) : (
+              <span className="text-xs text-muted-foreground text-center px-2">
+                Clique para enviar uma foto
+              </span>
+            )}
+          </div>
           {imageProcessing && (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" /> Processando...
             </p>
-          )}
-          {form.pastorImage && (
-            <img src={form.pastorImage} alt="Pastor" className="mt-2 max-h-40 rounded-md border object-cover" />
           )}
         </div>
 
