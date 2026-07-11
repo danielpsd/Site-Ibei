@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, members, visitors, converts, birthdays, galleryPhotos, muralPosts, InsertMember, InsertVisitor, InsertConvert, InsertBirthday, InsertGalleryPhoto, InsertMuralPost } from "../drizzle/schema";
+import { InsertUser, users, members, visitors, converts, birthdays, galleryPhotos, muralPosts, siteContent, InsertMember, InsertVisitor, InsertConvert, InsertBirthday, InsertGalleryPhoto, InsertMuralPost } from "../drizzle/schema";
 import { desc } from "drizzle-orm";
 import { ENV } from './_core/env';
 
@@ -265,4 +265,21 @@ export async function getAllUsers() {
   const db = await getDb();
   if (!db) return [];
   return await db.select().from(users).orderBy(desc(users.createdAt));
+}
+
+// ===== SITE CONTENT (seções editáveis da Home) =====
+export async function getSiteContent(section: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(siteContent).where(eq(siteContent.section, section)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function setSiteContent(section: string, data: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .insert(siteContent)
+    .values({ section, data })
+    .onDuplicateKeyUpdate({ set: { data } });
 }

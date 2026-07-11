@@ -138,3 +138,14 @@ export const muralPosts = mysqlTable("muralPosts", {
 
 export type MuralPost = typeof muralPosts.$inferSelect;
 export type InsertMuralPost = typeof muralPosts.$inferInsert;
+
+// Conteúdo editável das seções da Home (Quem Somos, Ministérios, Eventos, Blog)
+export const siteContent = mysqlTable("siteContent", {
+  id: int("id").autoincrement().primaryKey(),
+  section: varchar("section", { length: 64 }).notNull().unique(),
+  data: mediumtext("data").notNull(), // JSON serializado
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SiteContent = typeof siteContent.$inferSelect;
+export type InsertSiteContent = typeof siteContent.$inferInsert;

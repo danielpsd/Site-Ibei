@@ -6,54 +6,42 @@
 
 import { useEffect, useRef } from "react";
 import {
-  Heart, Users, Baby, Music, Calendar, Globe, BookOpen, Coins
+  Heart, Users, Baby, Music, Calendar, Globe, BookOpen, Coins, Sparkles
 } from "lucide-react";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
-const ministries = [
-  {
-    icon: Heart,
-    title: "Cuidado com Pessoas",
-    desc: "Acompanhamento pastoral e suporte emocional para cada membro da família.",
-  },
-  {
-    icon: Users,
-    title: "Células",
-    desc: "Grupos pequenos de comunhão, oração e crescimento espiritual em toda a cidade.",
-  },
-  {
-    icon: Coins,
-    title: "Mordomia Cristã",
-    desc: "Orientação financeira e gestão de recursos para honrar a Deus com suas finanças.",
-  },
-  {
-    icon: Baby,
-    title: "Kids",
-    desc: "Ministério infantil com programação especial e segura para crianças de todas as idades.",
-  },
-  {
-    icon: Music,
-    title: "Louvor & Adoração",
-    desc: "Equipe de adoração comprometida em conduzir a presença de Deus nos cultos.",
-  },
-  {
-    icon: Calendar,
-    title: "Eventos",
-    desc: "Conferências, retiros e eventos especiais que fortalecem a comunidade.",
-  },
-  {
-    icon: Globe,
-    title: "Missões",
-    desc: "Alcançando nações com o evangelho através de projetos missionários nacionais e internacionais.",
-  },
-  {
-    icon: BookOpen,
-    title: "Escola Bíblica",
-    desc: "Capacitação teológica e discipulado para todos os membros da igreja.",
-  },
-];
+export const MINISTRY_ICONS = {
+  Heart, Users, Baby, Music, Calendar, Globe, BookOpen, Coins, Sparkles,
+} as const;
+
+export type MinistryIconName = keyof typeof MINISTRY_ICONS;
+
+export interface MinistriesContent {
+  label: string;
+  headline: string;
+  paragraph: string;
+  items: { icon: MinistryIconName; title: string; desc: string }[];
+}
+
+export const MINISTRIES_DEFAULTS: MinistriesContent = {
+  label: "MINISTÉRIOS",
+  headline: "Soluções em diferentes áreas para sua família",
+  paragraph: "Oferecemos cuidado integral para cada fase da vida, com ministérios especializados para atender às necessidades da sua família.",
+  items: [
+    { icon: "Heart", title: "Cuidado com Pessoas", desc: "Acompanhamento pastoral e suporte emocional para cada membro da família." },
+    { icon: "Users", title: "Células", desc: "Grupos pequenos de comunhão, oração e crescimento espiritual em toda a cidade." },
+    { icon: "Coins", title: "Mordomia Cristã", desc: "Orientação financeira e gestão de recursos para honrar a Deus com suas finanças." },
+    { icon: "Baby", title: "Kids", desc: "Ministério infantil com programação especial e segura para crianças de todas as idades." },
+    { icon: "Music", title: "Louvor & Adoração", desc: "Equipe de adoração comprometida em conduzir a presença de Deus nos cultos." },
+    { icon: "Calendar", title: "Eventos", desc: "Conferências, retiros e eventos especiais que fortalecem a comunidade." },
+    { icon: "Globe", title: "Missões", desc: "Alcançando nações com o evangelho através de projetos missionários nacionais e internacionais." },
+    { icon: "BookOpen", title: "Escola Bíblica", desc: "Capacitação teológica e discipulado para todos os membros da igreja." },
+  ],
+};
 
 export default function MinistriesSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const content = useSiteContent<MinistriesContent>("ministries", MINISTRIES_DEFAULTS);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -75,26 +63,23 @@ export default function MinistriesSection() {
         {/* Header */}
         <div className="max-w-2xl mb-16">
           <div className="fade-in-up">
-            <span className="section-label">MINISTÉRIOS</span>
+            <span className="section-label">{content.label}</span>
           </div>
           <h2
             className="fade-in-up mt-4 font-display font-black text-white leading-tight"
             style={{ fontSize: "clamp(1.8rem, 4vw, 3rem)" }}
           >
-            Soluções em{" "}
-            <span className="text-green-400">diferentes áreas</span>{" "}
-            para sua família
+            {content.headline}
           </h2>
           <p className="fade-in-up mt-4 text-white/60 font-body">
-            Oferecemos cuidado integral para cada fase da vida, com ministérios
-            especializados para atender às necessidades da sua família.
+            {content.paragraph}
           </p>
         </div>
 
         {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {ministries.map((ministry, i) => {
-            const Icon = ministry.icon;
+          {content.items.map((ministry, i) => {
+            const Icon = MINISTRY_ICONS[ministry.icon] || MINISTRY_ICONS.Sparkles;
             return (
               <div
                 key={i}

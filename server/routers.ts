@@ -282,6 +282,29 @@ export const appRouter = router({
       return await db.getAllUsers();
     }),
   }),
+
+  // ===== SITE CONTENT ROUTER (seções editáveis da Home) =====
+  content: router({
+    // Lista pública: qualquer visitante do site carrega o conteúdo salvo
+    get: publicProcedure
+      .input(z.object({ section: z.string() }))
+      .query(async ({ input }) => {
+        const row = await db.getSiteContent(input.section);
+        if (!row) return null;
+        try {
+          return JSON.parse(row.data);
+        } catch {
+          return null;
+        }
+      }),
+
+    set: adminProcedure
+      .input(z.object({ section: z.string(), data: z.any() }))
+      .mutation(async ({ input }) => {
+        await db.setSiteContent(input.section, JSON.stringify(input.data));
+        return { success: true } as const;
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

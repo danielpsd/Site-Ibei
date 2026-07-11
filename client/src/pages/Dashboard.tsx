@@ -16,6 +16,7 @@ import {
   Search,
   Clock,
   ShieldCheck,
+  FileEdit,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useMemo, useState } from "react";
@@ -27,6 +28,11 @@ import ConvertForm from "@/components/ConvertForm";
 import MemberDetail from "@/pages/MemberDetail";
 import GaleriaFotosForm from "@/components/GaleriaFotosForm";
 import MuralPalavraForm from "@/components/MuralPalavraForm";
+import AboutContentForm from "@/components/admin/AboutContentForm";
+import MinistriesContentForm from "@/components/admin/MinistriesContentForm";
+import EventsContentForm from "@/components/admin/EventsContentForm";
+import BlogContentForm from "@/components/admin/BlogContentForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -43,6 +49,7 @@ const SECTIONS: DashboardMenuItem[] = [
   { id: "convertidos", label: "Novos Convertidos", icon: UserCheck },
   { id: "aniversarios", label: "Aniversários", icon: Cake },
   { id: "publicacoes", label: "Publicações", icon: FileText },
+  { id: "conteudo", label: "Conteúdo do Site", icon: FileEdit },
   { id: "usuarios", label: "Usuários", icon: ShieldCheck },
   { id: "metricas", label: "Métricas", icon: BarChart3 },
 ];
@@ -498,6 +505,30 @@ export default function Dashboard() {
               <MuralPalavraForm />
             </div>
           </div>
+        )}
+
+        {/* CONTEÚDO DO SITE */}
+        {section === "conteudo" && (
+          <Tabs defaultValue="sobre" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="sobre">Quem Somos</TabsTrigger>
+              <TabsTrigger value="ministerios">Ministérios</TabsTrigger>
+              <TabsTrigger value="eventos">Eventos</TabsTrigger>
+              <TabsTrigger value="blog">Blog</TabsTrigger>
+            </TabsList>
+            <TabsContent value="sobre" className="mt-4">
+              <AboutContentForm />
+            </TabsContent>
+            <TabsContent value="ministerios" className="mt-4">
+              <MinistriesContentForm />
+            </TabsContent>
+            <TabsContent value="eventos" className="mt-4">
+              <EventsContentForm />
+            </TabsContent>
+            <TabsContent value="blog" className="mt-4">
+              <BlogContentForm />
+            </TabsContent>
+          </Tabs>
         )}
 
         {/* USUÁRIOS */}
