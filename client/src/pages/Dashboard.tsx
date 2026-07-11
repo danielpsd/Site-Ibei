@@ -73,9 +73,9 @@ export default function Dashboard() {
   const [convertSearch, setConvertSearch] = useState("");
 
   // Queries
-  const { data: members = [], refetch: refetchMembers } = trpc.members.list.useQuery();
-  const { data: visitors = [], refetch: refetchVisitors } = trpc.visitors.list.useQuery();
-  const { data: converts = [], refetch: refetchConverts } = trpc.converts.list.useQuery();
+  const { data: members = [], refetch: refetchMembers, error: membersError } = trpc.members.list.useQuery();
+  const { data: visitors = [], refetch: refetchVisitors, error: visitorsError } = trpc.visitors.list.useQuery();
+  const { data: converts = [], refetch: refetchConverts, error: convertsError } = trpc.converts.list.useQuery();
   const { data: siteUsers = [] } = trpc.users.list.useQuery(undefined, {
     enabled: section === "usuarios",
   });
@@ -152,6 +152,20 @@ export default function Dashboard() {
             Igreja Batista Ebenézer de Ivinhema — painel administrativo
           </p>
         </div>
+
+        {/* Aviso de erro — evita mostrar "nenhum registro" quando na verdade a consulta falhou */}
+        {(membersError || visitorsError || convertsError) && (
+          <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 text-sm">
+            <p className="font-semibold">Erro ao carregar dados do banco</p>
+            <p className="mt-1">
+              {membersError?.message || visitorsError?.message || convertsError?.message}
+            </p>
+            <p className="mt-2 text-red-600">
+              Isso geralmente acontece quando o banco de dados está com uma coluna faltando. Rode{" "}
+              <code className="bg-red-100 px-1 rounded">npm run db:push</code> a partir do projeto local e recarregue a página.
+            </p>
+          </div>
+        )}
 
         {/* Stats Grid — sempre visível para contexto rápido */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
