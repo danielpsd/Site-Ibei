@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, mediumtext, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -115,7 +115,7 @@ export type InsertBirthday = typeof birthdays.$inferInsert;
 export const galleryPhotos = mysqlTable("galleryPhotos", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
-  imageUrl: text("imageUrl").notNull(),
+  imageUrl: mediumtext("imageUrl").notNull(),
   photoDate: varchar("photoDate", { length: 10 }), // YYYY-MM-DD
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });

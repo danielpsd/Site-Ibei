@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Users, Zap, Power } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, Users, Zap, Power, Pencil } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 import React from "react";
+import MemberFormExpanded from "@/components/MemberFormExpanded";
 
 interface MemberDetailProps {
   memberId: number;
@@ -17,6 +18,7 @@ interface MemberDetailProps {
 export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
   const { user } = useAuth();
   const [memberStatus, setMemberStatus] = React.useState<string | null>(null);
+  const [editOpen, setEditOpen] = React.useState(false);
 
   // Verificar se é admin
   if (user?.role !== "admin") {
@@ -99,13 +101,17 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
           </Button>
           <div>
             <h2 className="text-2xl font-bold">{member.name}</h2>
-            <p className="text-gray-500">{member.email}</p>
+            <p className="text-muted-foreground">{member.email}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Badge className={getStatusColor(memberStatus || member.status)}>
             {(memberStatus || member.status).toUpperCase()}
           </Badge>
+          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil className="w-4 h-4 mr-2" />
+            Editar
+          </Button>
           <Button
             variant={(memberStatus || member.status) === "ativo" ? "destructive" : "default"}
             size="sm"
@@ -120,6 +126,13 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
           </Button>
         </div>
       </div>
+
+      <MemberFormExpanded
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        member={member}
+        onSuccess={() => refetch()}
+      />
 
       {/* Tabs */}
       <Tabs defaultValue="perfil" className="w-full">
@@ -136,7 +149,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
           <div className="grid grid-cols-2 gap-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Idade</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Idade</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">{calculateAge(member.birthDate)} anos</p>
@@ -145,7 +158,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Como está se sentindo?</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Como está se sentindo?</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{member.spiritualFeeling || "Não informado"}</p>
@@ -154,7 +167,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Estado Civil</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Estado Civil</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm font-semibold capitalize">{member.maritalStatus || "Não informado"}</p>
@@ -163,7 +176,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">É batizado?</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">É batizado?</CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge variant={member.isBaptized === "sim" ? "default" : "outline"}>
@@ -174,7 +187,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">É pastor?</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">É pastor?</CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge variant={member.isPastor === "sim" ? "default" : "outline"}>
@@ -185,7 +198,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Faz parte da liderança?</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Faz parte da liderança?</CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge variant={member.isLeader === "sim" ? "default" : "outline"}>
@@ -196,7 +209,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Celular</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Celular</CardTitle>
               </CardHeader>
               <CardContent>
                 <a href={`https://wa.me/${member.phone?.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline flex items-center gap-2">
@@ -208,7 +221,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Necessidades especiais</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Necessidades especiais</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{member.specialNeeds || "Não informado"}</p>
@@ -222,7 +235,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
           <div className="grid grid-cols-2 gap-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Data de Nascimento</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Data de Nascimento</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{formatDate(member.birthDate)}</p>
@@ -231,7 +244,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Sexo</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Sexo</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm capitalize">{member.gender || "Não informado"}</p>
@@ -240,7 +253,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Data de Casamento</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Data de Casamento</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{formatDate(member.marriageDate)}</p>
@@ -249,7 +262,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">RG</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">RG</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm font-mono">{member.rg || "Não informado"}</p>
@@ -258,7 +271,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">CPF</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">CPF</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm font-mono">{member.cpf || "Não informado"}</p>
@@ -272,7 +285,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
           <div className="grid grid-cols-1 gap-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Email
                 </CardTitle>
@@ -286,7 +299,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Phone className="w-4 h-4" />
                   Telefone
                 </CardTitle>
@@ -300,7 +313,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
                   Endereço
                 </CardTitle>
@@ -317,7 +330,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
           <div className="grid grid-cols-1 gap-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Users className="w-4 h-4" />
                   Grupos/Ministérios
                 </CardTitle>
@@ -332,10 +345,10 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
                         </Badge>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-500">Não informado</p>
+                      <p className="text-sm text-muted-foreground">Não informado</p>
                     )
                   ) : (
-                    <p className="text-sm text-gray-500">Não informado</p>
+                    <p className="text-sm text-muted-foreground">Não informado</p>
                   )}
                 </div>
               </CardContent>
@@ -343,7 +356,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Zap className="w-4 h-4" />
                   Trilhas/Acompanhamento
                 </CardTitle>
@@ -358,10 +371,10 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
                         </Badge>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-500">Não informado</p>
+                      <p className="text-sm text-muted-foreground">Não informado</p>
                     )
                   ) : (
-                    <p className="text-sm text-gray-500">Não informado</p>
+                    <p className="text-sm text-muted-foreground">Não informado</p>
                   )}
                 </div>
               </CardContent>
@@ -369,7 +382,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Data do Batismo</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Data do Batismo</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{formatDate(member.baptismDate)}</p>
@@ -383,7 +396,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
           <div className="grid grid-cols-1 gap-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Data de Cadastro</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Data de Cadastro</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{formatDate(member.createdAt?.toString())}</p>
@@ -392,7 +405,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Última Atualização</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Última Atualização</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">{formatDate(member.updatedAt?.toString())}</p>
@@ -401,7 +414,7 @@ export default function MemberDetail({ memberId, onClose }: MemberDetailProps) {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Status</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge className={getStatusColor(member.status)}>

@@ -36,6 +36,13 @@
       "when": 1783744000000,
       "tag": "0004_add_password_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1783747000000,
+      "tag": "0005_widen_gallery_image_column",
+      "breakpoints": true
     }
   ]
 }

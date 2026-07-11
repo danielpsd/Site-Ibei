@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,48 +19,80 @@ interface MemberFormExpandedProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  /** Quando informado, o formulário edita esse membro em vez de criar um novo. */
+  member?: Record<string, any> | null;
 }
+
+const parseListField = (value: unknown): string => {
+  if (!value) return "";
+  if (typeof value !== "string") return "";
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.join(", ") : value;
+  } catch {
+    return value;
+  }
+};
+
+const emptyDefaults = {
+  name: "",
+  email: "",
+  phone: "",
+  birthDate: "",
+  gender: "masculino",
+  maritalStatus: "solteiro",
+  marriageDate: "",
+  rg: "",
+  cpf: "",
+  specialNeeds: "",
+  address: "",
+  isBaptized: "nao",
+  baptismDate: "",
+  isPastor: "nao",
+  isLeader: "nao",
+  spiritualFeeling: "",
+  groups: "",
+  trails: "",
+  status: "ativo",
+};
 
 export default function MemberFormExpanded({
   open,
   onOpenChange,
   onSuccess,
+  member,
 }: MemberFormExpandedProps) {
-  const { register, handleSubmit, watch, reset, setValue } = useForm({
-    defaultValues: {
-      // Dados Básicos
-      name: "",
-      email: "",
-      phone: "",
-      // Dados Pessoais
-      birthDate: "",
-      gender: "masculino",
-      maritalStatus: "solteiro",
-      marriageDate: "",
-      rg: "",
-      cpf: "",
-      specialNeeds: "",
-      address: "",
-      // Informações Religiosas
-      isBaptized: "nao",
-      baptismDate: "",
-      isPastor: "nao",
-      isLeader: "nao",
-      spiritualFeeling: "",
-      // Grupos e Ministérios
-      groups: "",
-      trails: "",
-      status: "ativo",
-    },
+  const isEditing = Boolean(member?.id);
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: emptyDefaults,
   });
 
+  // Preenche o formulário com os dados do membro ao abrir em modo de edição.
+  useEffect(() => {
+    if (!open) return;
+    if (member) {
+      reset({
+        ...emptyDefaults,
+        ...member,
+        birthDate: member.birthDate || "",
+        marriageDate: member.marriageDate || "",
+        baptismDate: member.baptismDate || "",
+        groups: parseListField(member.groups),
+        trails: parseListField(member.trails),
+      });
+    } else {
+      reset(emptyDefaults);
+    }
+  }, [open, member, reset]);
+
   const createMember = trpc.members.create.useMutation();
+  const updateMember = trpc.members.update.useMutation();
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      await createMember.mutateAsync({
+      const payload = {
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -77,16 +109,23 @@ export default function MemberFormExpanded({
         isPastor: data.isPastor,
         isLeader: data.isLeader,
         spiritualFeeling: data.spiritualFeeling || undefined,
-        groups: data.groups ? JSON.stringify(data.groups.split(",")) : undefined,
-        trails: data.trails ? JSON.stringify(data.trails.split(",")) : undefined,
+        groups: data.groups ? JSON.stringify(data.groups.split(",").map((g: string) => g.trim()).filter(Boolean)) : undefined,
+        trails: data.trails ? JSON.stringify(data.trails.split(",").map((t: string) => t.trim()).filter(Boolean)) : undefined,
         status: data.status,
-      });
-      toast.success("Membro cadastrado com sucesso!");
-      reset();
+      };
+
+      if (isEditing && member?.id) {
+        await updateMember.mutateAsync({ id: member.id, data: payload });
+        toast.success("Membro atualizado com sucesso!");
+      } else {
+        await createMember.mutateAsync(payload);
+        toast.success("Membro cadastrado com sucesso!");
+        reset(emptyDefaults);
+      }
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.message || "Erro ao cadastrar membro");
+      toast.error(error.message || "Erro ao salvar membro");
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +135,7 @@ export default function MemberFormExpanded({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Cadastrar Novo Membro</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar Membro" : "Cadastrar Novo Membro"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -309,7 +348,7 @@ export default function MemberFormExpanded({
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Cadastrando..." : "Cadastrar Membro"}
+              {isLoading ? "Salvando..." : isEditing ? "Salvar Alterações" : "Cadastrar Membro"}
             </Button>
           </div>
         </form>
