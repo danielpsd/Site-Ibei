@@ -8,15 +8,15 @@ import { toast } from "sonner";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const utils = trpc.useUtils();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const login = trpc.auth.login.useMutation({
     onSuccess: async () => {
-      await utils.auth.me.invalidate();
       toast.success("Login realizado com sucesso!");
-      setLocation("/admin");
+      // Navegação "dura" (recarrega a página) garante que o cookie de sessão
+      // recém-criado seja lido do zero, evitando problemas de cache do lado do cliente.
+      window.location.href = "/admin";
     },
     onError: (error) => {
       toast.error(error.message || "Email ou senha inválidos");
