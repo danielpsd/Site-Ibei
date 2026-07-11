@@ -171,7 +171,9 @@ class SDKServer {
     return this.signSession(
       {
         openId,
-        appId: ENV.appId,
+        // Usa um valor estável quando não há VITE_APP_ID configurado (login local
+        // por email/senha, sem depender do Manus) — o campo só precisa ser não-vazio.
+        appId: ENV.appId || "local-auth",
         name: options.name || "",
       },
       options
